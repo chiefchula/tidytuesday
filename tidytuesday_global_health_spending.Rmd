@@ -6,8 +6,6 @@ output:
   html_document:
     toc: true
     toc_float: true
-      collapsed: true
-      smooth_scroll: true
     toc_depth: 2
     number_sections: true
     theme: flatly
@@ -16,7 +14,7 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
-  echo = FALSE,
+  echo = TRUE,
   warning = FALSE,
   message = FALSE,
   error = FALSE,
@@ -34,8 +32,24 @@ spending_purpose <- tuesdata$spending_purpose
 # Introduction
 The TidyTueday Data for week 16 (released on `2026-04-21`) is about Global Health Spending. It comprises of 195 countries and territories since 2000. 
 The data tracks how much countries spend on health care, how money comes in and how it is channelled through financing schemes, and how it is spent on. The data is organized into three datasets.
+
 - Health spending: Aggregate health spending and its breakdown by funding source (domestic government, domestic private, and external aid).
+
 - Financial Schemes: Health spending by financial scheme such as government schemes, voluntary insurance, and out of pocket payments
+
 - Spending purpise: Health spending by healthcare function such as curative care, preventive care and medical goods.
 
 # Executive Summary
+
+# Exploratory Data Analysis
+## Financial Schemes
+The `Financial Schemes`dataset contains data of `r nrow(distinct(financing_schemes, country_name))` countries on `r nrow(distinct(financing_schemes, financing_scheme))` 
+
+```{r eda financial_schemes}
+countries <- financing_schemes %>% 
+  count(country_name)
+
+countries
+```
+
+
