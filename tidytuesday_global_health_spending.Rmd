@@ -14,7 +14,7 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
-  echo = TRUE,
+  echo = FALSE,
   warning = FALSE,
   message = FALSE,
   error = FALSE,
@@ -22,8 +22,11 @@ knitr::opts_chunk$set(
   dpi = 300
 )
 
-pacman::p_load(tidytuesdayR, tidyverse, janitor, skimr, tidylog)
+pacman::p_load(tidytuesdayR, tidyverse, janitor, skimr, tidylog, kableExtra, scales, plotly)
 
+```
+
+```{r attach data}
 tuesdata <- tuesdata <- tidytuesdayR::tt_load('2026-04-21')
 financing_schemes <- tuesdata$financing_schemes
 health_spending <- tuesdata$health_spending
@@ -43,13 +46,76 @@ The data tracks how much countries spend on health care, how money comes in and 
 
 # Exploratory Data Analysis
 ## Financial Schemes
-The `Financial Schemes`dataset contains data of `r nrow(distinct(financing_schemes, country_name))` countries on `r nrow(distinct(financing_schemes, financing_scheme))` 
+The `Financial Schemes`dataset contains data of `r nrow(distinct(financing_schemes, country_name))` countries on `r nrow(distinct(financing_schemes, financing_scheme))` types of financing schemes. 
+The different types of schemes are displayed below
 
 ```{r eda financial_schemes}
 countries <- financing_schemes %>% 
-  count(country_name)
+  count(financing_scheme) %>% 
+  select(-n, 'Financing Scheme' = 'financing_scheme')
 
-countries
+kable(countries)
+
 ```
+### General Breakdown of Financing Scheme
+According to the chart and table, it is visible that `Household Out of Pocket payment (OOPS)` scheme has the highest contribution, whereas `Rest of the world financing schemes (non-resident)` Scheme has contributed the least.
+```{r oops}
+financing_value <- financing_schemes %>% 
+  filter(!str_detect(indicator_code, 'che')) %>% 
+  # filter(str_detect(financing_scheme, 'Government|pocket|Rest|Unspecified|Voluntary')) %>% 
+  # filter(!str_detect(unit, '%')) %>% 
+  group_by(financing_scheme) %>% 
+  summarise(
+    avg_spending = dollar(mean(value)),
+    median_spending = dollar(median(value)),
+    minimum_value = dollar(min(value)),
+    maximum_value = dollar(max(value))
+  ) %>% 
+  rename()
+
+kable(financing_value, caption = 'Breakdown of financial values by financial scheme') %>% 
+  kable_classic()
 
 
+
+financing_value %>% 
+  select(financing_scheme, avg_spending) %>% 
+  mutate(`financing scheme` = case_when(
+    str_detect(financing_scheme, 'Government') ~ 'Government Scheme',
+    str_detect(financing_scheme, 'Household') ~ 'OOPS',
+    str_detect(financing_scheme, 'Rest') ~ 'Non-Resident',
+    str_detect(financing_scheme, 'n.e.c') ~ 'Unspecified',
+    str_detect(financing_scheme, 'Voluntary') ~ 'Volunrary HC Payments'
+  )) %>% 
+  ggplot(aes(`financing scheme`, avg_spending)) + 
+  geom_col(fill = "steelblue") +
+  geom_text(aes(label = avg_spending),
+            vjust = -0.5,
+            size = 3) +
+  labs(title = "Average Spending by Financing Scheme") +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 10),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    plot.title = element_text(size = 14, face = "bold"),
+    plot.subtitle = element_text(size = 10, color = "gray50")
+  )
+```
+## Trend of Spending by scheme
+The trend of spending by scheme is displayed below
+
+```{r}
+spending <- financing_schemes %>% 
+  filter(!str_detect(indicator_code, 'che')) %>% 
+  mutate(value_billions = value / 1e9) %>% 
+  slice_head(n = 50)
+  
+
+ggplot(spending, aes(year, dollar(value_billions))) + geom_col() + labs(title = 'Financing Scheme Trend', y = 'Value in Billions', x = 'year')
+
+
+```
