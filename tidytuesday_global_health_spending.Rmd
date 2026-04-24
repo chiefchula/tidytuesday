@@ -1,0 +1,41 @@
+---
+title: "Tidytuesday: Global Health Spending"
+author: "Thomas Chula"
+date: "2026-04-24"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+      collapsed: true
+      smooth_scroll: true
+    toc_depth: 2
+    number_sections: true
+    theme: flatly
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  error = FALSE,
+  fig.align = "center",
+  dpi = 300
+)
+
+pacman::p_load(tidytuesdayR, tidyverse, janitor, skimr, tidylog)
+
+tuesdata <- tuesdata <- tidytuesdayR::tt_load('2026-04-21')
+financing_schemes <- tuesdata$financing_schemes
+health_spending <- tuesdata$health_spending
+spending_purpose <- tuesdata$spending_purpose
+```
+# Introduction
+The TidyTueday Data for week 16 (released on `2026-04-21`) is about Global Health Spending. It comprises of 195 countries and territories since 2000. 
+The data tracks how much countries spend on health care, how money comes in and how it is channelled through financing schemes, and how it is spent on. The data is organized into three datasets.
+- Health spending: Aggregate health spending and its breakdown by funding source (domestic government, domestic private, and external aid).
+- Financial Schemes: Health spending by financial scheme such as government schemes, voluntary insurance, and out of pocket payments
+- Spending purpise: Health spending by healthcare function such as curative care, preventive care and medical goods.
+
+# Executive Summary
